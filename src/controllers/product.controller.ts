@@ -6,20 +6,35 @@ const productService = new ProductService()
 export class ProductController {
 
   async create(req: Request, res: Response) {
-    try {
+  try {
 
-      const product = await productService.create(req.body)
+    const { name, description, price, stock } = req.body
 
-      return res.status(201).json(product)
+    console.log(req.file)
+    console.log(req.body)
 
-    } catch (error: any) {
+    const imageUrl = req.file
+      ? `src/uploads/products/${req.file.filename}`
+      : null
 
-      return res.status(400).json({
-        message: error.message
-      })
+    const product = await productService.create({
+      name,
+      description,
+      price: Number(price),
+      stock: Number(stock),
+      imageUrl
+    })
 
-    }
+    return res.status(201).json(product)
+
+  } catch (error: any) {
+
+    return res.status(400).json({
+      message: error.message
+    })
+
   }
+}
 
   async findAll(req: Request, res: Response) {
 

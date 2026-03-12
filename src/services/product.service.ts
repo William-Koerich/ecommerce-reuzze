@@ -6,7 +6,7 @@ interface CreateProductDTO {
   description: string
   price: number
   stock: number
-  imageUrl: string
+  imageUrl: string | null
 }
 
 interface UpdateProductDTO {
