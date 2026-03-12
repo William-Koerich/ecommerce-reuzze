@@ -2,6 +2,7 @@ import { Router } from "express"
 import { UserController } from "../controllers/user.controller"
 import { ProductController } from "../controllers/product.controller"
 import { OrderController } from "../controllers/order.controller"
+import { AuthController } from "../controllers/auth.controller"
 
 
 const router = Router()
@@ -9,7 +10,9 @@ const router = Router()
 const userController = new UserController()
 const productController = new ProductController()
 const orderController = new OrderController()
+const authController = new AuthController()
 
+router.post("/login", authController.login)
 
 router.post("/users", userController.create)
 
