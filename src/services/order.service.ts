@@ -27,7 +27,7 @@ export class OrderService {
         throw new Error("Usuário não encontrado")
       }
 
-      // 2️⃣ buscar produtos de uma vez (performance)
+      // 3️⃣ buscar produtos
       const productIds = items.map(item => item.productId)
 
       const products = await tx.product.findMany({
@@ -42,7 +42,7 @@ export class OrderService {
         throw new Error("Um ou mais produtos não existem")
       }
 
-      // 3️⃣ validar estoque + montar itens
+      // 4️⃣ validar estoque + montar itens
       const orderItems = items.map(item => {
 
         const product = products.find(p => p.id === item.productId)!
@@ -58,18 +58,12 @@ export class OrderService {
         }
       })
 
-      // 4️⃣ calcular total
+      // 5️⃣ calcular total
       const total = orderItems.reduce((acc, item) => {
         return acc + item.price * item.quantity
       }, 0)
 
-      // 5️⃣ cálculo de desconto (exemplo simples)
       let totalDiscount = 0
-
-    //   if (total > 500) {
-    //     totalDiscount = total * 0.10
-    //   }
-
       const finalTotal = total - totalDiscount
 
       // 6️⃣ criar pedido

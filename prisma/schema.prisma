@@ -7,6 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  BOLETO
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -14,6 +27,23 @@ model User {
   cnpjOrCpf String   @unique
   password  String
   createdAt DateTime @default(now())
+
+  addresses Address[]
+  orders    Order[]
+}
+
+model Address {
+  id         String  @id @default(uuid())
+  userId     String
+  street     String
+  number     String
+  complement String?
+  city       String
+  state      String
+  zipCode    String
+  country    String
+
+  user User @relation(fields: [userId], references: [id])
 
   orders Order[]
 }
@@ -30,6 +60,26 @@ model Product {
   orderItems OrderItem[]
 }
 
+model Order {
+  id     String @id @default(uuid())
+  userId String
+
+  total         Float
+  totalDiscount Float
+
+  paymentStatus PaymentStatus  @default(PENDING)
+  paymentMethod PaymentMethod?
+  paidAt        DateTime?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  items     OrderItem[]
+  address   Address?    @relation(fields: [addressId], references: [id])
+  addressId String?
+}
+
 model OrderItem {
   id        String @id @default(uuid())
   orderId   String
@@ -39,15 +89,4 @@ model OrderItem {
 
   order   Order   @relation(fields: [orderId], references: [id])
   product Product @relation(fields: [productId], references: [id])
-}
-
-model Order {
-  id            String      @id @default(uuid())
-  userId        String
-  total         Float
-  totalDiscount Float
-  items         OrderItem[]
-  createdAt     DateTime    @default(now())
-
-  user User @relation(fields: [userId], references: [id])
 }

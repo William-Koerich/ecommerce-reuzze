@@ -2,6 +2,7 @@ import { Request, Response } from "express"
 import { OrderService } from "../services/order.service"
 
 export class OrderController {
+
   async create(req: Request, res: Response) {
 
     const { userId, items } = req.body
@@ -38,14 +39,13 @@ export class OrderController {
 
     const service = new OrderService()
 
-    const order = await service.findById(Array.isArray(id) ? id[0] : id)
-
-    if (!order) {
+    try {
+      const order = await service.findById(id as string)
+      return res.json(order)
+    } catch (error) {
       return res.status(404).json({
-        message: "Pedido não encontrado"
+        error: (error as Error).message
       })
     }
-
-    return res.json(order)
   }
 }
