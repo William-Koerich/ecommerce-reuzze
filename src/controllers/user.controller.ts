@@ -6,15 +6,17 @@ const userService = new UserService()
 export class UserController {
 
   async create(req: Request, res: Response) {
+
     try {
 
-      const { name, email, cnpjOrCpf, password } = req.body
+      const { name, email, cnpjOrCpf, password, address } = req.body
 
       const user = await userService.create({
         name,
         email,
         cnpjOrCpf,
-        password
+        password,
+        address
       })
 
       return res.status(201).json(user)
@@ -26,6 +28,7 @@ export class UserController {
       })
 
     }
+
   }
 
 }
