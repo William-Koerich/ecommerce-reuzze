@@ -66,9 +66,9 @@ export class OrderService {
       // 5️⃣ cálculo de desconto (exemplo simples)
       let totalDiscount = 0
 
-      if (total > 500) {
-        totalDiscount = total * 0.10
-      }
+    //   if (total > 500) {
+    //     totalDiscount = total * 0.10
+    //   }
 
       const finalTotal = total - totalDiscount
 
