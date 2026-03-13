@@ -1,87 +1,87 @@
-import { PrismaClient } from "@prisma/client"
-const prisma = new PrismaClient()
+import { PrismaClient, Category } from "@prisma/client";
+const prisma = new PrismaClient();
 
 interface CreateProductDTO {
-  name: string
-  description: string
-  price: number
-  stock: number
-  imageUrl: string | null
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  category: Category;
+  imageUrl: string | null;
 }
 
 interface UpdateProductDTO {
-  name?: string
-  description?: string
-  price?: number
-  stock?: number
-  imageUrl?: string
+  name?: string;
+  description?: string;
+  price?: number;
+  stock?: number;
+  category: Category;
+  imageUrl?: string;
 }
 
 export class ProductService {
-
   async create(data: CreateProductDTO) {
     const product = await prisma.product.create({
-      data
-    })
+      data,
+    });
 
-    return product
+    return product;
   }
 
-  async findAll() {
+  async findAll(category?: Category) {
     const products = await prisma.product.findMany({
-      orderBy: {
-        createdAt: "desc"
-      }
-    })
+      where: category ? { category } : undefined,
 
-    return products
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return products;
   }
 
   async findById(id: string) {
     const product = await prisma.product.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
 
     if (!product) {
-      throw new Error("Produto não encontrado")
+      throw new Error("Produto não encontrado");
     }
 
-    return product
+    return product;
   }
 
   async update(id: string, data: UpdateProductDTO) {
-
     const productExists = await prisma.product.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
 
     if (!productExists) {
-      throw new Error("Produto não encontrado")
+      throw new Error("Produto não encontrado");
     }
 
     const product = await prisma.product.update({
       where: { id },
-      data
-    })
+      data,
+    });
 
-    return product
+    return product;
   }
 
   async delete(id: string) {
-
     const productExists = await prisma.product.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
 
     if (!productExists) {
-      throw new Error("Produto não encontrado")
+      throw new Error("Produto não encontrado");
     }
 
     await prisma.product.delete({
-      where: { id }
-    })
+      where: { id },
+    });
 
-    return { message: "Produto removido" }
+    return { message: "Produto removido" };
   }
-
 }
