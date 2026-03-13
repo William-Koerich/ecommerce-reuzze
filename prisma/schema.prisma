@@ -25,6 +25,12 @@ enum Role {
   ADMIN
 }
 
+enum Category {
+  FIOS
+  MALHAS
+  MAQUINAS
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -62,6 +68,7 @@ model Product {
   stock       Int
   imageUrl    String?
   createdAt   DateTime @default(now())
+  category    Category @default(FIOS)
 
   orderItems OrderItem[]
 }
