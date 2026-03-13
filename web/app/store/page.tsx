@@ -136,7 +136,8 @@ export default function StorePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 
-            {products.map((product) => (
+            {products.length > 0 ? (
+              products.map((product) => (
 
               <Link key={product.id} href={`/store/${product.id}`}>
 
@@ -174,7 +175,13 @@ export default function StorePage() {
 
               </Link>
 
-            ))}
+            ))) : (
+
+              <p className="text-gray-400">
+                Nenhum produto encontrado.
+              </p>
+
+            )}
 
           </div>
 
