@@ -10,7 +10,7 @@ import path from "path"
 // Configuração do multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/") // pasta onde as imagens serão salvas
+    cb(null, "uploads/products/") // pasta onde as imagens serão salvas
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
@@ -30,6 +30,7 @@ const authController = new AuthController()
 router.post("/login", authController.login)
 
 router.post("/users", userController.create)
+
 
 // router.post("/products", productController.create)
 router.get("/products", productController.findAll)

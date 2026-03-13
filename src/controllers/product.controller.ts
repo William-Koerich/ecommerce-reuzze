@@ -14,7 +14,7 @@ export class ProductController {
     console.log(req.body)
 
     const imageUrl = req.file
-      ? `src/uploads/products/${req.file.filename}`
+      ? `/uploads/products/${req.file.filename}`
       : null
 
     const product = await productService.create({
