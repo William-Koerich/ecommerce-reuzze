@@ -519,7 +519,7 @@ function Contact() {
           </p>
 
           <a
-            href="https://wa.me/5547999999999"
+            href="https://wa.me/5547996637188"
             target="_blank"
             className="inline-flex items-center gap-3 bg-[#008568] hover:bg-[#00a07f] text-white px-8 py-4 rounded-xl text-lg font-semibold transition shadow-lg shadow-[#008568]/30"
           >
