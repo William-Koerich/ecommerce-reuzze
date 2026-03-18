@@ -1,141 +1,152 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 interface CreateOrderItemDTO {
-  productId: string
-  quantity: number
+  productId: string;
+  quantity: number;
 }
 
 interface CreateOrderDTO {
-  userId: string
-  items: CreateOrderItemDTO[]
+  userId?: string; // opcional
+  items: CreateOrderItemDTO[];
+
+  companyName: string;
+  buyerName: string;
+  cnpj: string;
+  whatsapp: string;
+  deliveryAddress: string;
 }
 
 export class OrderService {
-
-  async create({ userId, items }: CreateOrderDTO) {
-
+  async create({
+    userId,
+    items,
+    companyName,
+    buyerName,
+    cnpj,
+    whatsapp,
+    deliveryAddress,
+  }: CreateOrderDTO) {
     return prisma.$transaction(async (tx) => {
+      // ❌ REMOVE validação obrigatória de user
+      let user = null;
 
-      // 1️⃣ validar usuário
-      const user = await tx.user.findUnique({
-        where: { id: userId }
-      })
+      if (userId) {
+        user = await tx.user.findUnique({
+          where: { id: userId },
+        });
 
-      if (!user) {
-        throw new Error("Usuário não encontrado")
+        if (!user) {
+          throw new Error("Usuário não encontrado");
+        }
       }
 
-      // 3️⃣ buscar produtos
-      const productIds = items.map(item => item.productId)
+      // produtos
+      const productIds = items.map((item) => item.productId);
 
       const products = await tx.product.findMany({
         where: {
-          id: {
-            in: productIds
-          }
-        }
-      })
+          id: { in: productIds },
+        },
+      });
 
       if (products.length !== items.length) {
-        throw new Error("Um ou mais produtos não existem")
+        throw new Error("Um ou mais produtos não existem");
       }
 
-      // 4️⃣ validar estoque + montar itens
-      const orderItems = items.map(item => {
-
-        const product = products.find(p => p.id === item.productId)!
+      // itens
+      const orderItems = items.map((item) => {
+        const product = products.find((p) => p.id === item.productId)!;
 
         if (product.stock < item.quantity) {
-          throw new Error(`Estoque insuficiente para ${product.name}`)
+          throw new Error(`Estoque insuficiente para ${product.name}`);
         }
 
         return {
           productId: product.id,
           quantity: item.quantity,
-          price: product.price
-        }
-      })
+          price: product.price,
+        };
+      });
 
-      // 5️⃣ calcular total
+      // total
       const total = orderItems.reduce((acc, item) => {
-        return acc + item.price * item.quantity
-      }, 0)
+        return acc + item.price * item.quantity;
+      }, 0);
 
-      let totalDiscount = 0
-      const finalTotal = total - totalDiscount
-
-      // 6️⃣ criar pedido
+      // criação
       const order = await tx.order.create({
         data: {
-          userId,
-          total: finalTotal,
-          totalDiscount,
+          userId: userId ?? null,
+
+          companyName,
+          buyerName,
+          cnpj,
+          whatsapp,
+          deliveryAddress,
+
+          total,
+          totalDiscount: 0,
+
           items: {
-            create: orderItems
-          }
+            create: orderItems,
+          },
         },
         include: {
-          items: true
-        }
-      })
+          items: true,
+        },
+      });
 
-      // 7️⃣ atualizar estoque
+      // estoque
       for (const item of orderItems) {
-
-        const product = products.find(p => p.id === item.productId)!
+        const product = products.find((p) => p.id === item.productId)!;
 
         await tx.product.update({
           where: { id: product.id },
           data: {
-            stock: product.stock - item.quantity
-          }
-        })
-
+            stock: product.stock - item.quantity,
+          },
+        });
       }
 
-      return order
-    })
+      return order;
+    });
   }
 
   async findAll() {
-
     return prisma.order.findMany({
       include: {
         user: true,
         items: {
           include: {
-            product: true
-          }
-        }
+            product: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: "desc"
-      }
-    })
-
+        createdAt: "desc",
+      },
+    });
   }
 
   async findById(id: string) {
-
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
         user: true,
         items: {
           include: {
-            product: true
-          }
-        }
-      }
-    })
+            product: true,
+          },
+        },
+      },
+    });
 
     if (!order) {
-      throw new Error("Pedido não encontrado")
+      throw new Error("Pedido não encontrado");
     }
 
-    return order
+    return order;
   }
-
 }

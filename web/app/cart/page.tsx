@@ -153,9 +153,11 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <button className="mt-6 w-full bg-[#008568] hover:bg-[#00a17e] py-4 rounded-lg font-semibold transition">
-                Ir para pagamento
-              </button>
+              <Link href="/send-order">
+                <button className="mt-6 w-full bg-[#008568] hover:bg-[#00a17e] py-4 rounded-lg font-semibold transition">
+                  Enviar pedido
+                </button>
+              </Link>
             </div>
           </div>
         )}

@@ -1,51 +1,59 @@
-import { Request, Response } from "express"
-import { OrderService } from "../services/order.service"
+import { Request, Response } from "express";
+import { OrderService } from "../services/order.service";
 
 export class OrderController {
-
   async create(req: Request, res: Response) {
+    const {
+      userId,
+      items,
+      companyName,
+      buyerName,
+      cnpj,
+      whatsapp,
+      deliveryAddress,
+    } = req.body;
 
-    const { userId, items } = req.body
-
-    const service = new OrderService()
+    const service = new OrderService();
 
     try {
       const order = await service.create({
         userId,
-        items
-      })
+        items,
+        companyName,
+        buyerName,
+        cnpj,
+        whatsapp,
+        deliveryAddress,
+      });
 
-      return res.status(201).json(order)
-
+      return res.status(201).json(order);
     } catch (error) {
       return res.status(400).json({
-        error: (error as Error).message
-      })
+        error: (error as Error).message,
+      });
     }
   }
 
   async findAll(req: Request, res: Response) {
+    const service = new OrderService();
 
-    const service = new OrderService()
+    const orders = await service.findAll();
 
-    const orders = await service.findAll()
-
-    return res.json(orders)
+    return res.json(orders);
   }
 
   async findById(req: Request, res: Response) {
+    const { id } = req.params;
 
-    const { id } = req.params
-
-    const service = new OrderService()
+    const service = new OrderService();
 
     try {
-      const order = await service.findById(id as string)
-      return res.json(order)
+      const order = await service.findById(id as string);
+      return res.json(order);
     } catch (error) {
       return res.status(404).json({
-        error: (error as Error).message
-      })
+        error: (error as Error).message,
+      });
     }
   }
 }

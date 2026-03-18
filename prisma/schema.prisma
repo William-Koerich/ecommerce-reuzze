@@ -74,8 +74,16 @@ model Product {
 }
 
 model Order {
-  id     String @id @default(uuid())
-  userId String
+  id String @id @default(uuid())
+
+  userId String? // 👈 agora opcional
+
+  // 👇 NOVOS CAMPOS
+  companyName     String?
+  buyerName       String?
+  cnpj            String?
+  whatsapp        String?
+  deliveryAddress String?
 
   total         Float
   totalDiscount Float
@@ -86,7 +94,7 @@ model Order {
 
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 
   items     OrderItem[]
   address   Address?    @relation(fields: [addressId], references: [id])
