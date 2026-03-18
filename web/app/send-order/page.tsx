@@ -9,6 +9,24 @@ type CartItem = {
   qty: number;
 };
 
+function maskCNPJ(value: string) {
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 14)
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+}
+
+function maskPhone(value: string) {
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 11)
+    .replace(/^(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2");
+}
+
 export default function SendOrderPage() {
   const [form, setForm] = useState({
     empresa: "",
@@ -30,9 +48,19 @@ export default function SendOrderPage() {
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    let value = e.target.value;
+
+    if (e.target.name === "cnpj") {
+      value = maskCNPJ(value);
+    }
+
+    if (e.target.name === "whatsapp") {
+      value = maskPhone(value);
+    }
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
   }
 
@@ -59,8 +87,8 @@ export default function SendOrderPage() {
           })),
           companyName: form.empresa,
           buyerName: form.comprador,
-          cnpj: form.cnpj,
-          whatsapp: form.whatsapp,
+          cnpj: form.cnpj.replace(/\D/g, ""),
+          whatsapp: form.whatsapp.replace(/\D/g, ""),
         }),
       });
 
