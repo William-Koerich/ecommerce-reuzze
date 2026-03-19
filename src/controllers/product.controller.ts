@@ -10,7 +10,7 @@ export class ProductController {
       const { name, description, price, stock, category } = req.body;
 
       const imageUrl = req.file
-        ? `/uploads/products/${req.file.filename}`
+        ? `uploads/products/${req.file.filename}`
         : null;
 
       const product = await productService.create({
