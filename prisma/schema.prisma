@@ -11,6 +11,7 @@ enum PaymentStatus {
   PENDING
   PAID
   FAILED
+  PARTIALLY_PAID
   REFUNDED
 }
 
@@ -81,6 +82,7 @@ model Order {
   cnpj            String?
   whatsapp        String?
   deliveryAddress String?
+  amountPaid      Float   @default(0)
 
   total         Float
   totalDiscount Float
