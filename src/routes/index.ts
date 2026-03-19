@@ -45,5 +45,6 @@ router.post("/products",file.single("image"),productController.create)
 router.post("/orders", orderController.create)
 router.get("/orders", orderController.findAll)
 router.get("/orders/:id", orderController.findById)
+router.patch("/orders/:id", orderController.update)
 
 export default router

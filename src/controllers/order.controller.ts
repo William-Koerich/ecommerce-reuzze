@@ -3,7 +3,7 @@ import { OrderService } from "../services/order.service";
 import { sendOrderMail } from "../services/mail.service";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 type OrderItemRequest = {
   productId: string;
@@ -61,7 +61,7 @@ export class OrderController {
             quantity: item.quantity,
             price: product?.price || 0,
           };
-        })
+        }),
       );
 
       // ✅ usa os itens corretos
@@ -98,6 +98,68 @@ export class OrderController {
     } catch (error) {
       return res.status(404).json({
         error: (error as Error).message,
+      });
+    }
+  }
+
+  async update(req: Request<{ id: string }>, res: Response) {
+    const { id } = req.params;
+
+    const {
+      paymentStatus,
+      amountPaid,
+    }: {
+      paymentStatus:
+        | "PENDING"
+        | "PARTIALLY_PAID"
+        | "PAID"
+        | "FAILED"
+        | "REFUNDED";
+      amountPaid?: number;
+    } = req.body;
+
+    try {
+      const order = await prisma.order.findUnique({
+        where: { id },
+      });
+
+      if (!order) {
+        return res.status(404).json({ error: "Pedido não encontrado" });
+      }
+
+      let finalAmountPaid = order.amountPaid;
+
+      // ✅ lógica inteligente
+      if (paymentStatus === "PAID") {
+        finalAmountPaid = order.total;
+      }
+
+      if (paymentStatus === "PARTIALLY_PAID") {
+        if (!amountPaid || amountPaid <= 0) {
+          return res.status(400).json({
+            error: "Informe o valor pago",
+          });
+        }
+
+        finalAmountPaid = amountPaid;
+      }
+
+      const updated = await prisma.order.update({
+        where: { id },
+        data: {
+          paymentStatus,
+          amountPaid: finalAmountPaid,
+          paidAt:
+            paymentStatus === "PAID" || paymentStatus === "PARTIALLY_PAID"
+              ? new Date()
+              : null,
+        },
+      });
+
+      return res.json(updated);
+    } catch (error) {
+      return res.status(400).json({
+        error: "Erro ao atualizar pedido",
       });
     }
   }
