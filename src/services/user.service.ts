@@ -8,21 +8,11 @@ interface CreateUserDTO {
   email: string
   cnpjOrCpf: string
   password: string
-
-  address: {
-    street: string
-    number: string
-    complement?: string
-    city: string
-    state: string
-    zipCode: string
-    country: string
-  }
 }
 
 export class UserService {
 
-  async create({ name, email, cnpjOrCpf, password, address }: CreateUserDTO) {
+  async create({ name, email, cnpjOrCpf, password }: CreateUserDTO) {
 
     return prisma.$transaction(async (tx) => {
 
@@ -51,25 +41,11 @@ export class UserService {
         }
       })
 
-      // 2️⃣ cria endereço
-      const addressCreated = await tx.address.create({
-        data: {
-          userId: user.id,
-          street: address.street,
-          number: address.number,
-          complement: address.complement,
-          city: address.city,
-          state: address.state,
-          zipCode: address.zipCode,
-          country: address.country
-        }
-      })
 
       const { password: _, ...userWithoutPassword } = user
 
       return {
-        ...userWithoutPassword,
-        address: addressCreated
+        ...userWithoutPassword
       }
 
     })

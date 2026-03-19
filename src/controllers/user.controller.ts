@@ -9,14 +9,13 @@ export class UserController {
 
     try {
 
-      const { name, email, cnpjOrCpf, password, address } = req.body
+      const { name, email, cnpjOrCpf, password } = req.body
 
       const user = await userService.create({
         name,
         email,
         cnpjOrCpf,
         password,
-        address
       })
 
       return res.status(201).json(user)
