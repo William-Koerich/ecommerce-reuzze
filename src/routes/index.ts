@@ -3,7 +3,7 @@ import { UserController } from "../controllers/user.controller"
 import { ProductController } from "../controllers/product.controller"
 import { OrderController } from "../controllers/order.controller"
 import { AuthController } from "../controllers/auth.controller"
-import { upload } from "../middlewares/upload.middleware"
+import { DashboardController } from "../controllers/dashboard.controller"
 import multer from "multer"
 import path from "path"
 
@@ -26,6 +26,7 @@ const userController = new UserController()
 const productController = new ProductController()
 const orderController = new OrderController()
 const authController = new AuthController()
+const dashboardController = new DashboardController()
 
 router.post("/login", authController.login)
 
@@ -39,7 +40,7 @@ router.put("/products/:id", productController.update)
 router.delete("/products/:id", productController.delete)
 router.post("/products",file.single("image"),productController.create)
 
-
+router.get("/dashboard", dashboardController.getDashboard);
 
 
 router.post("/orders", orderController.create)

@@ -1,56 +1,119 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
+/* ================= TYPES ================= */
+
 type Metric = {
   label: string;
   value: string;
-  change: string;
 };
 
 type Order = {
   id: string;
-  customer: string;
+  companyName: string | null;
   total: number;
-  status: string;
+  paymentStatus: string;
 };
 
-export default function DashboardPage() {
-  // ✅ Dados mockados direto (sem useEffect)
-  const metrics: Metric[] = [
-    { label: "Recebido no mês", value: "R$ 12.450", change: "+12%" },
-    { label: "Qtd. Pedidos", value: "148", change: "+8%" },
-    { label: "Ticket médio", value: "R$ 84,12", change: "+3%" },
-  ];
+type Summary = {
+  ordersToday: number;
+  revenueToday: number;
+  productsCount: number;
+  lowStock: number;
+};
 
-  const orders: Order[] = [
-    {
-      id: "#1024",
-      customer: "Empresa Alpha",
-      total: 320,
-      status: "Pago",
-    },
-    {
-      id: "#1023",
-      customer: "João Silva",
-      total: 120,
-      status: "Pendente",
-    },
-    {
-      id: "#1022",
-      customer: "Mercado Beta",
-      total: 890,
-      status: "Pago",
-    },
-  ];
+type DashboardResponse = {
+  metrics: {
+    revenue: number;
+    orders: number;
+    averageTicket: number;
+  };
+  summary: Summary;
+  recentOrders: Order[];
+};
+
+/* ================= HELPERS ================= */
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value || 0);
+}
+
+function translateStatus(status: string) {
+  switch (status) {
+    case "PAID":
+      return "Pago";
+    case "PENDING":
+      return "Pendente";
+    case "PARTIALLY_PAID":
+      return "Parcial";
+    case "FAILED":
+      return "Falhou";
+    case "REFUNDED":
+      return "Reembolsado";
+    default:
+      return status;
+  }
+}
+
+function statusStyle(status: string) {
+  switch (status) {
+    case "PAID":
+      return "bg-green-500/20 text-green-400";
+    case "PENDING":
+      return "bg-yellow-500/20 text-yellow-400";
+    default:
+      return "bg-gray-500/20 text-gray-400";
+  }
+}
+
+/* ================= COMPONENT ================= */
+
+export default function DashboardPage() {
+  const [metrics, setMetrics] = useState<Metric[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [summary, setSummary] = useState<Summary | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch("http://localhost:3333/api/dashboard");
+        const data: DashboardResponse = await res.json();
+
+        setMetrics([
+          {
+            label: "Recebido no mês",
+            value: formatCurrency(data.metrics.revenue),
+          },
+          {
+            label: "Qtd. Pedidos",
+            value: String(data.metrics.orders),
+          },
+          {
+            label: "Ticket médio",
+            value: formatCurrency(data.metrics.averageTicket),
+          },
+        ]);
+
+        setOrders(data.recentOrders);
+        setSummary(data.summary);
+      } catch (error) {
+        console.error("Erro ao carregar dashboard:", error);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#04110f] text-white p-6">
-
       {/* HEADER */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-gray-400 text-sm">
-          Visão geral da sua loja
-        </p>
+        <p className="text-gray-400 text-sm">Visão geral da sua loja</p>
       </div>
 
       {/* METRICS */}
@@ -60,61 +123,47 @@ export default function DashboardPage() {
             key={index}
             className="bg-[#0b1f1c] border border-white/10 rounded-xl p-5"
           >
-            <p className="text-sm text-gray-400 mb-2">
-              {metric.label}
-            </p>
+            <p className="text-sm text-gray-400 mb-2">{metric.label}</p>
 
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">
-                {metric.value}
-              </h2>
-
-              <span className="text-green-400 text-sm">
-                {metric.change}
-              </span>
+              <h2 className="text-xl font-semibold">{metric.value}</h2>
             </div>
           </div>
         ))}
       </div>
 
-      {/* GRID */}
-      <div className="grid md:grid-cols-1 gap-6">
-
-        {/* SUMMARY */}
+      {/* SUMMARY */}
+      {summary && (
         <div className="bg-[#0b1f1c] border border-white/10 rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-6">
-            Resumo rápido
-          </h2>
+          <h2 className="text-lg font-semibold mb-6">Resumo rápido</h2>
 
           <div className="space-y-4 text-sm text-gray-300">
             <div className="flex justify-between">
               <span>Pedidos hoje</span>
-              <span>12</span>
+              <span>{summary.ordersToday}</span>
             </div>
 
             <div className="flex justify-between">
               <span>Receita hoje</span>
-              <span>R$ 1.240</span>
+              <span>{formatCurrency(summary.revenueToday)}</span>
             </div>
 
             <div className="flex justify-between">
               <span>Produtos ativos</span>
-              <span>34</span>
+              <span>{summary.productsCount}</span>
             </div>
 
             <div className="flex justify-between">
               <span>Baixo estoque</span>
-              <span className="text-red-400">3</span>
+              <span className="text-red-400">{summary.lowStock}</span>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* ORDERS */}
       <div className="mt-10 bg-[#0b1f1c] border border-white/10 rounded-xl p-6">
-        <h2 className="text-lg font-semibold mb-6">
-          Pedidos recentes
-        </h2>
+        <h2 className="text-lg font-semibold mb-6">Pedidos recentes</h2>
 
         <div className="space-y-4">
           {orders.map((order) => (
@@ -125,31 +174,23 @@ export default function DashboardPage() {
               <div>
                 <p className="text-sm">{order.id}</p>
                 <p className="text-xs text-gray-400">
-                  {order.customer}
+                  {order.companyName || "Cliente"}
                 </p>
               </div>
 
               <p className="text-sm font-medium">
-                {new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(order.total)}
+                {formatCurrency(order.total)}
               </p>
 
               <span
-                className={`text-xs px-2 py-1 rounded ${
-                  order.status === "Pago"
-                    ? "bg-green-500/20 text-green-400"
-                    : "bg-yellow-500/20 text-yellow-400"
-                }`}
+                className={`text-xs px-2 py-1 rounded ${statusStyle(order.paymentStatus)}`}
               >
-                {order.status}
+                {translateStatus(order.paymentStatus)}
               </span>
             </div>
           ))}
         </div>
       </div>
-
     </main>
   );
 }
